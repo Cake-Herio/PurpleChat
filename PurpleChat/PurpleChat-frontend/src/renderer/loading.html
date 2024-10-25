@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleChat Loading</title>
+  <style>
+    .login-panel {
+      background: #fff;
+      border-radius: 3px;
+      border: 10px solid white;
+      height: 370px;
+    }
+
+    .login-panel .title {
+      height: 30px;
+      padding: 5px 0px 0px 10px;
+    }
+
+    .loading-panel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .loading-panel img {
+      width: 200px;
+      padding-top: 40px;
+    }
+
+    .icon {
+      width: 100px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Optionally, style for win-op component-like area if needed */
+    .win-op {
+      display: none;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="login-panel">
+    <div class="title drag">PurpleChat</div>
+    <img src="assets/img/icon.png" class="icon" alt="App Icon">
+    <div class="loading-panel">
+      <img src="assets/img/loading.gif" alt="Loading...">
+    </div>
+  </div>
+
+  <div class="win-op">
+    <!-- Placeholder for the win-op buttons if necessary -->
+  </div>
+</body>
+
+</html>
