@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purplechat.mappers.UserContactApplyMapper">
+
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.purplechat.entity.po.UserContactApply">
+		<!--自增ID-->
+		<id column="apply_id" property="applyId"/>
+		<!--申请人ID-->
+		<result column="apply_user_id" property="applyUserId"/>
+		<!--接收人ID-->
+		<result column="receive_user_id" property="receiveUserId"/>
+		<!--联系人类型 0:好友 1:群组-->
+		<result column="contact_type" property="contactType"/>
+		<!--联系人群组ID-->
+		<result column="contact_id" property="contactId"/>
+		<!--最后申请时间-->
+		<result column="last_apply_time" property="lastApplyTime"/>
+		<!--状态 0:待处理 1:已同意 2:已拒绝 3:已拉黑-->
+		<result column="status" property="status"/>
+		<!--申请信息-->
+		<result column="apply_info" property="applyInfo"/>
+	</resultMap>
+
+	<!--通用查询结果列-->
+	<sql id="base_column_list">
+		user_contact_apply.apply_id,
+		user_contact_apply.apply_user_id,
+		user_contact_apply.receive_user_id,
+		user_contact_apply.contact_type,
+		user_contact_apply.contact_id,
+		user_contact_apply.last_apply_time,
+		user_contact_apply.status,
+		user_contact_apply.apply_info
+	</sql>
+
+	<!--基础条件查询-->
+	<sql id="base_query_condition">
+		<if test="query.applyId != null">
+			and user_contact_apply.apply_id = #{query.applyId}
+		</if>
+		<if test="query.applyUserId != null and query.applyUserId != ''">
+			and user_contact_apply.apply_user_id = #{query.applyUserId}
+		</if>
+		<if test="query.receiveUserId != null and query.receiveUserId != ''">
+			and user_contact_apply.receive_user_id = #{query.receiveUserId}
+		</if>
+		<if test="query.contactType != null">
+			and user_contact_apply.contact_type = #{query.contactType}
+		</if>
+		<if test="query.contactId != null and query.contactId != ''">
+			and user_contact_apply.contact_id = #{query.contactId}
+		</if>
+		<if test="query.lastApplyTime != null">
+			and user_contact_apply.last_apply_time = #{query.lastApplyTime}
+		</if>
+		<if test="query.status != null">
+			and user_contact_apply.status = #{query.status}
+		</if>
+		<if test="query.applyInfo != null and query.applyInfo != ''">
+			and user_contact_apply.apply_info = #{query.applyInfo}
+		</if>
+	</sql>
+	<!--拓展的查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.applyUserIdFuzzy != null  and query.applyUserIdFuzzy != ''">
+			and user_contact_apply.apply_user_id like concat('%', #{query.applyUserIdFuzzy}, '%')
+		</if>
+		<if test="query.receiveUserIdFuzzy != null  and query.receiveUserIdFuzzy != ''">
+			and user_contact_apply.receive_user_id like concat('%', #{query.receiveUserIdFuzzy}, '%')
+		</if>
+		<if test="query.contactIdFuzzy != null  and query.contactIdFuzzy != ''">
+			and user_contact_apply.contact_id like concat('%', #{query.contactIdFuzzy}, '%')
+		</if>
+		<if test="query.applyInfoFuzzy != null  and query.applyInfoFuzzy != ''">
+			and user_contact_apply.apply_info like concat('%', #{query.applyInfoFuzzy}, '%')
+		</if>
+-- 		额外条件
+		<if test="query.lastApplyTimeStamp != null">
+			and user_contact_apply.last_apply_time>=#{query.lastApplyTimeStamp}
+		</if>
+	</sql>
+
+	<!--拓展的查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT
+		<include refid="base_column_list"/>
+		<if test="query.queryContactInfo">
+			,case
+			when user_contact_apply.contact_type = 0 then u.nick_name
+			when user_contact_apply.contact_type = 1 then g.group_name
+			end as contactName
+		</if>
+		FROM user_contact_apply
+		<if test="query.queryContactInfo">
+			LEFT JOIN user_info u on user_contact_apply.apply_user_id = u.user_id and user_contact_apply.receive_user_id = #{query.receiveUserId}
+			LEFT JOIN group_info g on user_contact_apply.contact_id = g.group_id and user_contact_apply.receive_user_id = #{query.receiveUserId}
+		</if>
+		<include refid="query_condition"/>
+		<if test="query.orderBy!=null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage!=null">
+			limit #{query.simplePage.start},#{query.simplePage.end}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM user_contact_apply
+		<include refid="query_condition"/>
+	</select>
+
+	<update id="updateByParam" parameterType="map">
+		UPDATE user_contact_apply
+		<set>
+			<!-- 设置需要更新的字段 -->
+			<if test="bean.applyUserId != null">apply_user_id = #{bean.applyUserId},</if>
+			<if test="bean.receiveUserId != null">receive_user_id = #{bean.receiveUserId},</if>
+			<if test="bean.contactType != null">contact_type = #{bean.contactType},</if>
+			<if test="bean.contactId != null">contact_id = #{bean.contactId},</if>
+			<if test="bean.lastApplyTime != null">last_apply_time = #{bean.lastApplyTime},</if>
+			<if test="bean.status != null">status = #{bean.status},</if>
+			<if test="bean.applyInfo != null">apply_info = #{bean.applyInfo}</if>
+		</set>
+		<include refid="query_condition"/>
+	</update>
+
+	<!--插入 （匹配有效的字段）-->
+	<insert id="insert" parameterType="com.purplechat.entity.po.UserContactApply">
+		<selectKey keyProperty="bean.applyId" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO user_contact_apply
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.applyUserId != null">
+				apply_user_id,
+			</if>
+			<if test="bean.receiveUserId != null">
+				receive_user_id,
+			</if>
+			<if test="bean.contactType != null">
+				contact_type,
+			</if>
+			<if test="bean.contactId != null">
+				contact_id,
+			</if>
+			<if test="bean.lastApplyTime != null">
+				last_apply_time,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.applyInfo != null">
+				apply_info,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.applyUserId != null">
+				#{bean.applyUserId},
+			</if>
+			<if test="bean.receiveUserId != null">
+				#{bean.receiveUserId},
+			</if>
+			<if test="bean.contactType != null">
+				#{bean.contactType},
+			</if>
+			<if test="bean.contactId != null">
+				#{bean.contactId},
+			</if>
+			<if test="bean.lastApplyTime != null">
+				#{bean.lastApplyTime},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.applyInfo != null">
+				#{bean.applyInfo},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或者更新 （匹配有效的字段）-->
+	<insert id="insertOrUpdate" parameterType="com.purplechat.entity.po.UserContactApply">
+		INSERT INTO user_contact_apply
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.applyId != null">
+				apply_id,
+			</if>
+			<if test="bean.applyUserId != null">
+				apply_user_id,
+			</if>
+			<if test="bean.receiveUserId != null">
+				receive_user_id,
+			</if>
+			<if test="bean.contactType != null">
+				contact_type,
+			</if>
+			<if test="bean.contactId != null">
+				contact_id,
+			</if>
+			<if test="bean.lastApplyTime != null">
+				last_apply_time,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.applyInfo != null">
+				apply_info,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.applyId != null">
+				#{bean.applyId},
+			</if>
+			<if test="bean.applyUserId != null">
+				#{bean.applyUserId},
+			</if>
+			<if test="bean.receiveUserId != null">
+				#{bean.receiveUserId},
+			</if>
+			<if test="bean.contactType != null">
+				#{bean.contactType},
+			</if>
+			<if test="bean.contactId != null">
+				#{bean.contactId},
+			</if>
+			<if test="bean.lastApplyTime != null">
+				#{bean.lastApplyTime},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.applyInfo != null">
+				#{bean.applyInfo},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.applyUserId != null">
+				apply_user_id = VALUES(apply_user_id),
+			</if>
+			<if test="bean.receiveUserId != null">
+				receive_user_id = VALUES(receive_user_id),
+			</if>
+			<if test="bean.contactType != null">
+				contact_type = VALUES(contact_type),
+			</if>
+			<if test="bean.contactId != null">
+				contact_id = VALUES(contact_id),
+			</if>
+			<if test="bean.lastApplyTime != null">
+				last_apply_time = VALUES(last_apply_time),
+			</if>
+			<if test="bean.status != null">
+				status = VALUES(status),
+			</if>
+			<if test="bean.applyInfo != null">
+				apply_info = VALUES(apply_info),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加 （批量插入）-->
+	<insert id="insertBatch" parameterType="com.purplechat.entity.po.UserContactApply">
+		INSERT INTO user_contact_apply (apply_user_id, receive_user_id, contact_type, contact_id, last_apply_time, status, apply_info)VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.applyUserId}, #{item.receiveUserId}, #{item.contactType}, #{item.contactId}, #{item.lastApplyTime}, #{item.status}, #{item.applyInfo})
+		</foreach>
+	</insert>
+
+	<!--批量新增修改 （批量插入）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.purplechat.entity.po.UserContactApply">
+		INSERT INTO user_contact_apply (apply_user_id, receive_user_id, contact_type, contact_id, last_apply_time, status, apply_info)VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.applyUserId}, #{item.receiveUserId}, #{item.contactType}, #{item.contactId}, #{item.lastApplyTime}, #{item.status}, #{item.applyInfo})
+		</foreach>
+		on DUPLICATE key update
+		apply_user_id = VALUES(apply_user_id),
+		receive_user_id = VALUES(receive_user_id),
+		contact_type = VALUES(contact_type),
+		contact_id = VALUES(contact_id),
+		last_apply_time = VALUES(last_apply_time),
+		status = VALUES(status),
+		apply_info = VALUES(apply_info)
+	</insert>
+
+	<!--根据ApplyId查询-->
+	<select id="selectByApplyId" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user_contact_apply where apply_id=#{applyId}
+	</select>
+
+	<!--根据ApplyId更新-->
+	<update id="updateByApplyId" parameterType="com.purplechat.entity.po.UserContactApply">
+		UPDATE user_contact_apply
+		<set>
+			<if test="bean.applyUserId != null">
+				apply_user_id = #{bean.applyUserId},
+			</if>
+			<if test="bean.receiveUserId != null">
+				receive_user_id = #{bean.receiveUserId},
+			</if>
+			<if test="bean.contactType != null">
+				contact_type = #{bean.contactType},
+			</if>
+			<if test="bean.contactId != null">
+				contact_id = #{bean.contactId},
+			</if>
+			<if test="bean.lastApplyTime != null">
+				last_apply_time = #{bean.lastApplyTime},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.applyInfo != null">
+				apply_info = #{bean.applyInfo},
+			</if>
+		</set>
+		where apply_id=#{applyId}
+	</update>
+
+	<!--根据ApplyId删除-->
+	<delete id="deleteByApplyId">
+		delete from user_contact_apply where apply_id=#{applyId}
+	</delete>
+	<!--根据ApplyUserIdAndReceiveUserIdAndContactId查询-->
+	<select id="selectByApplyUserIdAndReceiveUserIdAndContactId" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user_contact_apply where apply_user_id=#{applyUserId} and receive_user_id=#{receiveUserId} and contact_id=#{contactId}
+	</select>
+
+	<!--根据ApplyUserIdAndReceiveUserIdAndContactId更新-->
+	<update id="updateByApplyUserIdAndReceiveUserIdAndContactId" parameterType="com.purplechat.entity.po.UserContactApply">
+		UPDATE user_contact_apply
+		<set>
+			<if test="bean.applyUserId != null">
+				apply_user_id = #{bean.applyUserId},
+			</if>
+			<if test="bean.receiveUserId != null">
+				receive_user_id = #{bean.receiveUserId},
+			</if>
+			<if test="bean.contactType != null">
+				contact_type = #{bean.contactType},
+			</if>
+			<if test="bean.contactId != null">
+				contact_id = #{bean.contactId},
+			</if>
+			<if test="bean.lastApplyTime != null">
+				last_apply_time = #{bean.lastApplyTime},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.applyInfo != null">
+				apply_info = #{bean.applyInfo},
+			</if>
+		</set>
+		where apply_user_id=#{applyUserId} and receive_user_id=#{receiveUserId} and contact_id=#{contactId}
+	</update>
+
+	<!--根据ApplyUserIdAndReceiveUserIdAndContactId删除-->
+	<delete id="deleteByApplyUserIdAndReceiveUserIdAndContactId">
+		delete from user_contact_apply where apply_user_id=#{applyUserId} and receive_user_id=#{receiveUserId} and contact_id=#{contactId}
+	</delete>
+</mapper>

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purplechat.mappers.UserInfoBeautyMapper">
+
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.purplechat.entity.po.UserInfoBeauty">
+		<!--自增id-->
+		<id column="id" property="id"/>
+		<!--用户邮箱-->
+		<result column="email" property="email"/>
+		<!--用户id-->
+		<result column="user_id" property="userId"/>
+		<!--0：未使用1：使用-->
+		<result column="status" property="status"/>
+	</resultMap>
+
+	<!--通用查询结果列-->
+	<sql id="base_column_list">
+		id,email,user_id,status
+	</sql>
+
+	<!--基础条件查询-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.email != null and query.email != ''">
+			and email = #{query.email}
+		</if>
+		<if test="query.userId != null and query.userId != ''">
+			and user_id = #{query.userId}
+		</if>
+		<if test="query.status != null">
+			and status = #{query.status}
+		</if>
+	</sql>
+	<!--拓展的查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.emailFuzzy != null  and query.emailFuzzy != ''">
+			and email like concat('%', #{query.emailFuzzy}, '%')
+		</if>
+		<if test="query.userIdFuzzy != null  and query.userIdFuzzy != ''">
+			and user_id like concat('%', #{query.userIdFuzzy}, '%')
+		</if>
+	</sql>
+
+	<!--拓展的查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT
+		<include refid="base_column_list"/>
+		FROM user_info_beauty
+		<include refid="query_condition"/>
+		<if test="query.orderBy!=null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.SimplePage!=null">
+			limit #{query.simplePage.start},#{query.simplePage.end}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM user_info_beauty
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入 （匹配有效的字段）-->
+	<insert id="insert" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		INSERT INTO user_info_beauty
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.email != null">
+				email,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.email != null">
+				#{bean.email},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或者更新 （匹配有效的字段）-->
+	<insert id="insertOrUpdate" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		INSERT INTO user_info_beauty
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.email != null">
+				email,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.email != null">
+				#{bean.email},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.id != null">
+				id = VALUES(id),
+			</if>
+			<if test="bean.email != null">
+				email = VALUES(email),
+			</if>
+			<if test="bean.userId != null">
+				user_id = VALUES(user_id),
+			</if>
+			<if test="bean.status != null">
+				status = VALUES(status),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加 （批量插入）-->
+	<insert id="insertBatch" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		INSERT INTO user_info_beauty (id, email, user_id, status)VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.id}, #{item.email}, #{item.userId}, #{item.status})
+		</foreach>
+	</insert>
+
+	<!--批量新增修改 （批量插入）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		INSERT INTO user_info_beauty (id, email, user_id, status)VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.id}, #{item.email}, #{item.userId}, #{item.status})
+		</foreach>
+		on DUPLICATE key update
+		id = VALUES(id),
+		email = VALUES(email),
+		user_id = VALUES(user_id),
+		status = VALUES(status),
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user_info_beauty where id=#{id}
+	</select>
+
+	<!--根据Id更新-->
+	<update id="updateById" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		UPDATE user_info_beauty
+		<set>
+		<if test="bean.id != null">
+			id = #{bean.id},
+		</if>
+		<if test="bean.email != null">
+			email = #{bean.email},
+		</if>
+		<if test="bean.userId != null">
+			user_id = #{bean.userId},
+		</if>
+		<if test="bean.status != null">
+			status = #{bean.status},
+		</if>
+		</set>
+		where id=#{id}
+	</update>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		delete from user_info_beauty where id=#{id}
+	</delete>
+	<!--根据UserId查询-->
+	<select id="selectByUserId" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user_info_beauty where user_id=#{userId}
+	</select>
+
+	<!--根据UserId更新-->
+	<update id="updateByUserId" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		UPDATE user_info_beauty
+		<set>
+		<if test="bean.id != null">
+			id = #{bean.id},
+		</if>
+		<if test="bean.email != null">
+			email = #{bean.email},
+		</if>
+		<if test="bean.userId != null">
+			user_id = #{bean.userId},
+		</if>
+		<if test="bean.status != null">
+			status = #{bean.status},
+		</if>
+		</set>
+		where user_id=#{userId}
+	</update>
+
+	<!--根据UserId删除-->
+	<delete id="deleteByUserId">
+		delete from user_info_beauty where user_id=#{userId}
+	</delete>
+	<!--根据Email查询-->
+	<select id="selectByEmail" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user_info_beauty where email=#{email}
+	</select>
+
+	<!--根据Email更新-->
+	<update id="updateByEmail" parameterType="com.purplechat.entity.po.UserInfoBeauty">
+		UPDATE user_info_beauty
+		<set>
+		<if test="bean.id != null">
+			id = #{bean.id},
+		</if>
+		<if test="bean.email != null">
+			email = #{bean.email},
+		</if>
+		<if test="bean.userId != null">
+			user_id = #{bean.userId},
+		</if>
+		<if test="bean.status != null">
+			status = #{bean.status},
+		</if>
+		</set>
+		where email=#{email}
+	</update>
+
+	<!--根据Email删除-->
+	<delete id="deleteByEmail">
+		delete from user_info_beauty where email=#{email}
+	</delete>
+</mapper>
